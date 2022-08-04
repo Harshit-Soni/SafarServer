@@ -6,6 +6,7 @@ import { createServer } from "https";
 import cors from "cors";
 import { userTypeDef } from "./schema/typedefs/userTypedef";
 import { userResolvers } from "./schema/resolvers/userResolver";
+import { client } from "./db";
 const router = express.Router();
 
 export async function startAppoloServer() {
@@ -29,6 +30,15 @@ export async function startAppoloServer() {
   app.use(urlencoded({ extended: false }));
   app.use(cors());
   app.use(router);
+  // app.get("/", (a, b) => {
+  //   client.connect((obj) => {
+  //     console.log(obj);
+  //   });
+  //   // const res = client.query("Select * from Persons");
+  //   // console.log(res);
+
+  //   b.send("hellps");
+  // });
   app.listen(4000, () => {
     console.log("server listening ");
   });

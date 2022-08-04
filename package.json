@@ -31,10 +31,12 @@
   },
   "dependencies": {
     "@graphql-tools/schema": "^8.5.1",
+    "@types/pg": "^8.6.5",
     "apollo-server-core": "^3.10.0",
     "apollo-server-express": "^3.10.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "graphql": "^16.5.0"
+    "graphql": "^16.5.0",
+    "pg": "^8.7.3"
   }
 }
