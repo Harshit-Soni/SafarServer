@@ -30,15 +30,6 @@ export async function startAppoloServer() {
   app.use(urlencoded({ extended: false }));
   app.use(cors());
   app.use(router);
-  // app.get("/", (a, b) => {
-  //   client.connect((obj) => {
-  //     console.log(obj);
-  //   });
-  //   // const res = client.query("Select * from Persons");
-  //   // console.log(res);
-
-  //   b.send("hellps");
-  // });
   app.listen(4000, () => {
     console.log("server listening ");
   });
