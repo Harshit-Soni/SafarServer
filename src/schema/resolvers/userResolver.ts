@@ -1,18 +1,20 @@
 // import { pool } from "../../db";
 
-import { HttpQueryError } from "apollo-server-core";
 import { client } from "../../db";
 
 export const userResolvers = {
-  // Query: {
-  //   getUserById: async (parent, args, context, info) => {
-  //     console.log(args, "here");
+  Query: {
+    getUser: async (parent, args) => {
+      console.log(args, "here");
 
-  //     const values = await client.query(`Select * from Persons`);
-  //     console.log(values.rows);
+      const values = await client.query(
+        `Select * from userdetails where username='${args.username}'`
+      );
+      console.log(values.rows);
 
-  //     return { name: "harshit", age: 23 };
-  //   },
+      return values.rows[0];
+    },
+  },
   Mutation: {
     signin: async (parent, args) => {
       try {
@@ -24,6 +26,23 @@ export const userResolvers = {
             '${args.username}'
           )`);
         return authkey;
+      } catch (e) {
+        console.error(e);
+        return "error";
+      }
+    },
+    signup: async (parent, args) => {
+      try {
+        console.log(args);
+        await client.query(`Insert into userdetails ("username", "password", "fullName", "emailid", "age", "joineddate") values(
+           '${args.username}',
+           '${args.password}',
+           '${args.name}',
+           '${args.emailId}',
+           '${args.age}',
+           to_timestamp(${Date.now()})
+          )`);
+        return "ok";
       } catch (e) {
         console.error(e);
         return "error";

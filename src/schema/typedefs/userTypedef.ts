@@ -1,21 +1,29 @@
 import { gql } from "apollo-server-core";
 
-// type User {
-//   username: String
-//   password: String
-//   name: String
-//   age: Int
-//   joineddate: Date
-//   emailid: String
-//   dp: String
-//   postIdArray: [Int]
-//   followinguserarray: [String]
-// }
 export const userTypeDef = gql`
+  type User {
+    username: String
+    password: String
+    name: String
+    age: Int
+    joineddate: Timestamp
+    emailId: String
+    dp: String
+    postIdArray: [Int]
+    followinguserarray: [String]
+  }
+
   type Query {
-    _: String
+    getUser(username: String!): User
   }
   type Mutation {
     signin(username: String!, password: String!): String!
+    signup(
+      username: String!
+      password: String!
+      name: String!
+      emailId: String!
+      age: Int!
+    ): String!
   }
 `;
