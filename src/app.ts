@@ -10,6 +10,7 @@ import { resolvers as scalarResolvers } from "graphql-scalars";
 import { typeDefs as scalarTypeDefs } from "graphql-scalars";
 import { userResolvers } from "./schema/resolvers/userResolver";
 import { userTypeDef } from "./schema/typedefs/userTypedef";
+import { verifyToken } from "./authentication/Auth";
 
 const router = express.Router();
 
@@ -19,7 +20,6 @@ export async function startAppoloServer() {
   const schema = makeExecutableSchema({
     typeDefs: [userTypeDef, ...scalarTypeDefs],
     resolvers: [userResolvers, scalarResolvers],
-    // playgroud:true
   });
 
   const app = express();
@@ -27,7 +27,12 @@ export async function startAppoloServer() {
 
   const apolloServer = new ApolloServer({
     schema,
+    context: ({ req }) => {
+      const token = req.get("Authorization") || "";
+      return { user: verifyToken(token.replace("Bearer ", "")) };
+    },
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    debug: false,
   });
   await apolloServer.start();
 

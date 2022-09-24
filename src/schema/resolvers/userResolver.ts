@@ -1,29 +1,27 @@
-import { createToken, verifyToken } from "../../authentication/Auth";
-
+import { AuthenticationError } from "apollo-server-core";
 import bcrypt from "bcryptjs";
 import { client } from "../../db";
+import { createToken } from "../../authentication/Auth";
 
 // http status code should also be defined
 // statefull (session) / stateless (JWT) (key difference ??)
 
 export const userResolvers = {
   Query: {
-    // shouldn't it be based on token?
-    getUser: async (parent, args) => {
-      console.log(args, "here");
+    getUser: async (parent, args, { user }) => {
+      try {
+        if (!user) return "no user";
 
-      const exist = await verifyToken(
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiaGFyc2hpdCIsImlhdCI6MTY2MjgzMzExOCwiZXhwIjoxNjYyODMzMTc4fQ.LNL6HNtNGmdBQ6-m4hxJpUyZTFD1soEzgQ_x84OhOLU"
-      );
-
-      console.log("exist", exist);
-
-      const values = await client.query(
-        `Select * from userdetails where username='${args.username}'`
-      );
-      console.log(values.rows);
-
-      return values.rows[0];
+        console.log(args, "here");
+        const values = await client.query(
+          `Select * from userdetails where username='${args.username}'`
+        );
+        console.log(values.rows);
+        return values.rows[0];
+      } catch (e) {
+        console.error("error", e);
+        return e;
+      }
     },
   },
   Mutation: {
@@ -32,19 +30,43 @@ export const userResolvers = {
 
       try {
         console.log(args);
-        const authkey = await createToken({
-          name: args.username,
-        });
+        const isAuthenticated = await client.query(
+          `Select username from userdetails where username = '${args.username}'`
+        );
 
-        await client.query(`Insert into users values(
-           '${authkey}',
-            to_timestamp(${Date.now()}),
-            '${args.username}'
-          )`);
-        return authkey;
+        // check password also
+
+        if (isAuthenticated.rowCount) {
+          const authkey = await createToken({
+            name: args.username,
+          });
+
+          const userExists = await client.query(
+            `Select username from users where username = '${args.username}'`
+          );
+
+          if (userExists.rowCount) {
+            // update authkey
+            await client.query(
+              `Update users set authkey='${authkey}' where username = '${args.username}'`
+            );
+          } else {
+            // inset authkey and timeStamp
+            await client.query(`Insert into users values(
+            '${authkey}',
+              to_timestamp(${Date.now()}),
+              '${args.username}'
+            )`);
+          }
+          return authkey;
+        }
+
+        throw new AuthenticationError("unauthenticated user", {
+          "Status code": 401,
+        });
       } catch (e) {
-        console.error(e);
-        return "error";
+        console.error("error", e);
+        return e;
       }
     },
     signup: async (parent, args) => {
